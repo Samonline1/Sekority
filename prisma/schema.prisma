@@ -1,0 +1,68 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model AlertTemplate {
+  id        String   @id @default(cuid())
+  channel   String   @unique // EMAIL, SMS, WHATSAPP, CALL
+  subject   String?  // Optional subject for Email
+  body      String   // The text or template
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model AlertLog {
+  id                String   @id @default(cuid())
+  triggeredAt       DateTime @default(now())
+  ipAddress         String?
+  userAgent         String?
+  
+  // Independent channel outcomes
+  emailStatus       String   @default("PENDING") // SENT, FAILED, SKIPPED
+  emailMessageId    String?
+  emailError        String?
+  
+  callStatus        String   @default("PENDING") // SENT, FAILED, SKIPPED
+  callMessageId     String?
+  callError         String?
+
+  smsStatus         String   @default("PENDING") // SENT, FAILED, SKIPPED
+  smsMessageId      String?
+  smsError          String?
+  
+  whatsappStatus    String   @default("PENDING") // SENT, FAILED, SKIPPED
+  whatsappMessageId String?
+  whatsappError     String?
+
+  createdAt         DateTime @default(now())
+}
+
+model ChatUser {
+  id        String        @id @default(cuid())
+  userId    String        @unique // unique identifier e.g. "user_primary", "contact_alice"
+  name      String        // display name
+  code      String        // secret entrance passcode
+  role      String        @default("USER")
+  createdAt DateTime      @default(now())
+  messages  ChatMessage[]
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  userId    String
+  user      ChatUser @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  userName  String
+  text      String
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+}
