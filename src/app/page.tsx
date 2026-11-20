@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Instructions from "@/components/Instructions";
@@ -15,6 +15,12 @@ interface ChannelDisplayState {
   recipient?: string;
   details?: string;
   error?: string;
+}
+
+interface CoordsState {
+  latitude: number;
+  longitude: number;
+  accuracy: number;
 }
 
 export default function HomePage() {
@@ -33,6 +39,41 @@ export default function HomePage() {
   const [activityState, setActivityState] = useState<ChannelDisplayState>({ status: "IDLE" });
 
   const [lastTriggerTime, setLastTriggerTime] = useState<string | null>(null);
+
+  // GPS Coordinates state acquired during the 5s window
+  const [coords, setCoords] = useState<CoordsState | null>(null);
+  const [coordsStatus, setCoordsStatus] = useState<string>("Locating coordinates...");
+  const coordsRef = useRef<CoordsState | null>(null);
+
+  // Acquire coordinates as soon as / loads
+  useEffect(() => {
+    if (typeof window !== "undefined" && "geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const loc: CoordsState = {
+            latitude: pos.coords.latitude,
+            longitude: pos.coords.longitude,
+            accuracy: pos.coords.accuracy,
+          };
+          setCoords(loc);
+          coordsRef.current = loc;
+          setCoordsStatus(
+            `Locked: ${loc.latitude.toFixed(5)}, ${loc.longitude.toFixed(5)} (±${Math.round(loc.accuracy)}m)`
+          );
+        },
+        (err) => {
+          setCoordsStatus(
+            err.code === 1
+              ? "Location permission denied"
+              : "Location unavailable"
+          );
+        },
+        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+      );
+    } else {
+      setCoordsStatus("Geolocation not supported");
+    }
+  }, []);
 
   const executeAlertTrigger = useCallback(async () => {
     setIsLoading(true);
@@ -53,6 +94,9 @@ export default function HomePage() {
       "Security alert initiated. Dispersing emergency notifications and phone call across channels."
     );
 
+    // Ensure we send coordinates if captured
+    const locToSend = coordsRef.current || coords;
+
     try {
       const response = await fetch("/api/security-alert", {
         method: "POST",
@@ -60,6 +104,7 @@ export default function HomePage() {
         body: JSON.stringify({
           source: "auto-scanner-client",
           clientTimestamp: currentTimestamp,
+          location: locToSend || undefined,
         }),
       });
 
@@ -146,27 +191,35 @@ export default function HomePage() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [coords]);
 
   return (
     <div className="min-h-screen bg-white text-black flex flex-col font-sans">
-      {/* Screen Reader Live Region */}
+      {/* Screen Reader Live Announcements */}
       <ScreenReaderAnnouncer message={announcement} />
 
-      {/* Top Header */}
+      {/* Main Accessible Header */}
       <Header />
 
-      {/* Main Container - Mobile First Centered Layout */}
-      <main className="flex-1 w-full max-w-xl mx-auto px-4 py-6 sm:py-8 flex flex-col space-y-6">
-        {/* Service Heading */}
+      {/* Primary Layout Container */}
+      <main className="flex-1 max-w-xl w-full mx-auto px-4 py-6 flex flex-col space-y-6">
+        {/* Urgent Alert Title */}
         <section aria-labelledby="main-heading" className="space-y-1">
+          <div className="flex items-center space-x-2">
+            <span className="text-xs uppercase font-mono tracking-widest px-2 py-0.5 bg-black text-white rounded font-bold">
+              EMERGENCY
+            </span>
+            <span className="text-xs text-neutral-500 font-mono">
+              SEKORITY RAPID RESPONSE
+            </span>
+          </div>
           <h1
             id="main-heading"
             className="text-2xl sm:text-3xl font-extrabold tracking-tight text-black"
           >
-            Emergency Security Alert
+            Accessible Security Alert System
           </h1>
-          <p className="text-sm sm:text-base text-neutral-600 leading-snug">
+          <p className="text-sm text-neutral-600 leading-relaxed">
             Automatic countdown initiates emergency alert dispatch across Voice Call, Telegram, Email, and Database audit.
           </p>
         </section>
@@ -175,14 +228,27 @@ export default function HomePage() {
         <Instructions />
 
         {/* Automatic 5-Second Scanner Component with SFX */}
-        <section aria-label="Automated Security Alert Scanner Action" className="pt-2">
+        <section aria-label="Automated Security Alert Scanner Action" className="pt-2 space-y-2">
           <AutoAlertScanner
             onTrigger={executeAlertTrigger}
             isLoading={isLoading}
             alertDispatched={alertDispatched}
           />
+
+          {/* Coordinates readout during and after countdown */}
+          <div className="flex items-center justify-between px-3 py-2 bg-[#F6F6F6] border border-neutral-200 rounded-xl text-xs font-mono">
+            <span className="font-bold text-neutral-500 uppercase text-[10px]">
+              GPS Coordinates:
+            </span>
+            <span className="text-neutral-800 font-semibold truncate ml-2">
+              {coords
+                ? `${coords.latitude.toFixed(5)}, ${coords.longitude.toFixed(5)} (±${Math.round(coords.accuracy)}m)`
+                : coordsStatus}
+            </span>
+          </div>
+
           {lastTriggerTime && (
-            <p className="text-xs text-center text-neutral-500 mt-2 font-mono">
+            <p className="text-xs text-center text-neutral-500 mt-1 font-mono">
               Last alert processed at: {lastTriggerTime}
             </p>
           )}
@@ -269,12 +335,12 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* SEKORITY Platform Safety Features Hub */}
+        {/* SEKORITY Platform Safety Features Hub (No Emojis) */}
         <section aria-label="Safety Features Navigation" className="pt-2">
           <div className="bg-white border border-neutral-200 rounded-2xl p-4 shadow-xs space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold uppercase tracking-wider text-neutral-800">
-                🛡️ Platform Safety Hub
+                Platform Safety Hub
               </span>
               <span className="text-[10px] font-mono text-neutral-500">SEKORITY 2.0</span>
             </div>
@@ -283,7 +349,6 @@ export default function HomePage() {
                 href="/trip"
                 className="p-3 bg-neutral-50 hover:bg-neutral-100 border border-neutral-200 rounded-xl transition text-left space-y-1 block"
               >
-                <div className="text-base">🚗</div>
                 <div className="text-xs font-bold text-neutral-900">Safe Trip</div>
                 <div className="text-[10px] text-neutral-500 font-mono">/trip</div>
               </Link>
@@ -291,7 +356,6 @@ export default function HomePage() {
                 href="/gps"
                 className="p-3 bg-neutral-50 hover:bg-neutral-100 border border-neutral-200 rounded-xl transition text-left space-y-1 block"
               >
-                <div className="text-base">📍</div>
                 <div className="text-xs font-bold text-neutral-900">GPS Share</div>
                 <div className="text-[10px] text-neutral-500 font-mono">/gps</div>
               </Link>
@@ -299,7 +363,6 @@ export default function HomePage() {
                 href="/ring"
                 className="p-3 bg-neutral-50 hover:bg-neutral-100 border border-neutral-200 rounded-xl transition text-left space-y-1 block"
               >
-                <div className="text-base">👥</div>
                 <div className="text-xs font-bold text-neutral-900">Trusted Circle</div>
                 <div className="text-[10px] text-neutral-500 font-mono">/ring</div>
               </Link>
@@ -307,7 +370,6 @@ export default function HomePage() {
                 href="/chk"
                 className="p-3 bg-neutral-50 hover:bg-neutral-100 border border-neutral-200 rounded-xl transition text-left space-y-1 block"
               >
-                <div className="text-base">⏱️</div>
                 <div className="text-xs font-bold text-neutral-900">Safety Timer</div>
                 <div className="text-[10px] text-neutral-500 font-mono">/chk</div>
               </Link>

@@ -1,7 +1,10 @@
 import { ChannelResult } from "../types";
 import { getAlertMessage } from "../templates";
 
-export async function sendTelegramAlert(timestamp: string): Promise<ChannelResult> {
+export async function sendTelegramAlert(
+  timestamp: string,
+  location?: { latitude?: number; longitude?: number; accuracy?: number }
+): Promise<ChannelResult> {
   const botToken = process.env.TELEGRAM_BOT_TOKEN;
   const chatId = process.env.TELEGRAM_CHAT_ID;
 
@@ -22,8 +25,8 @@ export async function sendTelegramAlert(timestamp: string): Promise<ChannelResul
   }
 
   try {
-    const templateMessage = await getAlertMessage("SMS", timestamp); // Uses concise urgent mobile template
-    const text = `🚨 <b>EMERGENCY SECURITY ALERT</b> 🚨\n\n${templateMessage.body}\n\n<b>Source:</b> Accessible Web Security Client\n<b>Triggered At:</b> ${timestamp}`;
+    const templateMessage = await getAlertMessage("TELEGRAM", timestamp, location);
+    const text = `<b>EMERGENCY SECURITY ALERT</b>\n\n${templateMessage.body}\n\n<b>Source:</b> Accessible Web Security Client\n<b>Triggered At:</b> ${timestamp}`;
 
     const endpoint = `https://api.telegram.org/bot${botToken}/sendMessage`;
     const response = await fetch(endpoint, {

@@ -1,7 +1,10 @@
 import { ChannelResult } from "../types";
 import { getAlertMessage } from "../templates";
 
-export async function sendWhatsAppAlert(timestamp: string): Promise<ChannelResult> {
+export async function sendWhatsAppAlert(
+  timestamp: string,
+  location?: { latitude?: number; longitude?: number; accuracy?: number }
+): Promise<ChannelResult> {
   const token = process.env.WHATSAPP_ACCESS_TOKEN;
   const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
   const toPhone = process.env.ALERT_RECIPIENT_PHONE;
@@ -24,8 +27,7 @@ export async function sendWhatsAppAlert(timestamp: string): Promise<ChannelResul
   }
 
   try {
-    const message = await getAlertMessage("WHATSAPP", timestamp);
-    // WhatsApp format requires numbers without '+' or punctuation (e.g. 15551234567)
+    const message = await getAlertMessage("WHATSAPP", timestamp, location);
     const cleanedRecipient = toPhone.replace(/[^0-9]/g, "");
 
     const endpoint = `https://graph.facebook.com/v21.0/${phoneNumberId}/messages`;

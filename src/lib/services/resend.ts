@@ -1,7 +1,10 @@
 import { ChannelResult } from "../types";
 import { getAlertMessage } from "../templates";
 
-export async function sendEmailAlert(timestamp: string): Promise<ChannelResult> {
+export async function sendEmailAlert(
+  timestamp: string,
+  location?: { latitude?: number; longitude?: number; accuracy?: number }
+): Promise<ChannelResult> {
   const apiKey = (process.env.RESEND_API_KEY || "").trim();
   const rawRecipient = (process.env.ALERT_RECIPIENT_EMAIL || "").trim();
   const fromEmail = (process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev").trim();
@@ -24,8 +27,8 @@ export async function sendEmailAlert(timestamp: string): Promise<ChannelResult> 
   }
 
   try {
-    const message = await getAlertMessage("EMAIL", timestamp);
-    const subject = message.subject || "🚨 URGENT: Accessible Security Alert Triggered";
+    const message = await getAlertMessage("EMAIL", timestamp, location);
+    const subject = message.subject || "URGENT: Accessible Security Alert Triggered";
 
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",

@@ -36,18 +36,19 @@ export async function POST(req: NextRequest) {
     const parseResult = securityAlertSchema.safeParse(body);
     const validData = parseResult.success
       ? parseResult.data
-      : { clientTimestamp: new Date().toISOString() };
+      : { clientTimestamp: new Date().toISOString(), location: undefined };
 
     const timestamp = validData.clientTimestamp || new Date().toISOString();
+    const location = validData.location;
     const alertId = `alert_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
 
     // 3. Parallel Non-Blocking Execution with Promise.allSettled
     const [emailResult, callResult, telegramResult, smsResult, whatsappResult] = await Promise.allSettled([
-      sendEmailAlert(timestamp),
-      sendVoiceCallAlert(timestamp),
-      sendTelegramAlert(timestamp),
-      sendSmsAlert(timestamp),
-      sendWhatsAppAlert(timestamp),
+      sendEmailAlert(timestamp, location),
+      sendVoiceCallAlert(timestamp, location),
+      sendTelegramAlert(timestamp, location),
+      sendSmsAlert(timestamp, location),
+      sendWhatsAppAlert(timestamp, location),
     ]);
 
     const formatResult = (

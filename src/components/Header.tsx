@@ -17,31 +17,31 @@ export default function Header() {
             href="/trip"
             className="text-[11px] font-bold px-2 py-1 bg-neutral-100 text-black border border-neutral-200 rounded-md hover:border-black transition-colors shrink-0"
           >
-            🚗 Trip
+            Trip
           </Link>
           <Link
             href="/gps"
             className="text-[11px] font-bold px-2 py-1 bg-neutral-100 text-black border border-neutral-200 rounded-md hover:border-black transition-colors shrink-0"
           >
-            📍 GPS
+            GPS
           </Link>
           <Link
             href="/ring"
             className="text-[11px] font-bold px-2 py-1 bg-neutral-100 text-black border border-neutral-200 rounded-md hover:border-black transition-colors shrink-0"
           >
-            👥 Ring
+            Ring
           </Link>
           <Link
             href="/chk"
             className="text-[11px] font-bold px-2 py-1 bg-neutral-100 text-black border border-neutral-200 rounded-md hover:border-black transition-colors shrink-0"
           >
-            ⏱️ Chk
+            Chk
           </Link>
           <Link
             href="/chat"
             className="text-[11px] font-bold px-2 py-1 bg-black text-white rounded-md hover:bg-neutral-800 transition-colors shrink-0 shadow-xs"
           >
-            💬 Chat
+            Chat
           </Link>
         </nav>
       </div>
