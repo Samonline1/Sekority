@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import Link from "next/link";
 import Header from "@/components/Header";
 import Instructions from "@/components/Instructions";
 import AutoAlertScanner from "@/components/AutoAlertScanner";
@@ -265,6 +266,52 @@ export default function HomePage() {
               details={whatsappState.details}
               error={whatsappState.error}
             />
+          </div>
+        </section>
+
+        {/* SEKORITY Platform Safety Features Hub */}
+        <section aria-label="Safety Features Navigation" className="pt-2">
+          <div className="bg-white border border-neutral-200 rounded-2xl p-4 shadow-xs space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold uppercase tracking-wider text-neutral-800">
+                🛡️ Platform Safety Hub
+              </span>
+              <span className="text-[10px] font-mono text-neutral-500">SEKORITY 2.0</span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+              <Link
+                href="/trip"
+                className="p-3 bg-neutral-50 hover:bg-neutral-100 border border-neutral-200 rounded-xl transition text-left space-y-1 block"
+              >
+                <div className="text-base">🚗</div>
+                <div className="text-xs font-bold text-neutral-900">Safe Trip</div>
+                <div className="text-[10px] text-neutral-500 font-mono">/trip</div>
+              </Link>
+              <Link
+                href="/gps"
+                className="p-3 bg-neutral-50 hover:bg-neutral-100 border border-neutral-200 rounded-xl transition text-left space-y-1 block"
+              >
+                <div className="text-base">📍</div>
+                <div className="text-xs font-bold text-neutral-900">GPS Share</div>
+                <div className="text-[10px] text-neutral-500 font-mono">/gps</div>
+              </Link>
+              <Link
+                href="/ring"
+                className="p-3 bg-neutral-50 hover:bg-neutral-100 border border-neutral-200 rounded-xl transition text-left space-y-1 block"
+              >
+                <div className="text-base">👥</div>
+                <div className="text-xs font-bold text-neutral-900">Trusted Circle</div>
+                <div className="text-[10px] text-neutral-500 font-mono">/ring</div>
+              </Link>
+              <Link
+                href="/chk"
+                className="p-3 bg-neutral-50 hover:bg-neutral-100 border border-neutral-200 rounded-xl transition text-left space-y-1 block"
+              >
+                <div className="text-base">⏱️</div>
+                <div className="text-xs font-bold text-neutral-900">Safety Timer</div>
+                <div className="text-[10px] text-neutral-500 font-mono">/chk</div>
+              </Link>
+            </div>
           </div>
         </section>
       </main>

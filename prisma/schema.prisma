@@ -66,3 +66,61 @@ model ChatMessage {
 
   @@index([createdAt])
 }
+
+model Journey {
+  id                    String    @id @default(cuid())
+  userId                String    @default("user_sb")
+  fromLocation          String
+  toLocation            String
+  purpose               String?
+  transportMode         String    @default("CAB") // CAB, BUS, METRO, WALKING, CAR
+  trackingUrl           String?   // e.g. Uber/Ola share ride URL
+  expectedDurationMins  Int
+  expectedArrivalAt     DateTime
+  startedAt             DateTime  @default(now())
+  completedAt           DateTime?
+  actualDurationMinutes Int?
+  status                String    @default("ACTIVE") // ACTIVE, COMPLETED, DELAYED, CANCELLED
+  notifiedStarted       Boolean   @default(false)
+  notifiedOverdue       Boolean   @default(false)
+  notifiedCompleted     Boolean   @default(false)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([status])
+}
+
+model EmergencyContact {
+  id               String   @id @default(cuid())
+  userId           String   @default("user_sb")
+  name             String
+  phone            String
+  email            String?
+  relationship     String?  @default("Trusted Contact") // Family, Friend, Doctor, Colleague
+  isPrimary        Boolean  @default(false)
+  verified         Boolean  @default(true)
+  notifyByTelegram Boolean  @default(true)
+  notifyByEmail    Boolean  @default(true)
+  notifyBySMS      Boolean  @default(false)
+  notifyByWhatsApp Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model SafetyCheckin {
+  id           String    @id @default(cuid())
+  userId       String    @default("user_sb")
+  destination  String?
+  message      String?
+  durationMins Int       @default(30)
+  startedAt    DateTime  @default(now())
+  expiresAt    DateTime
+  completedAt  DateTime?
+  status       String    @default("ACTIVE") // ACTIVE, COMPLETED, CANCELLED, ESCALATED
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([status])
+}
