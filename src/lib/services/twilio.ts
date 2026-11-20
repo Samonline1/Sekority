@@ -1,7 +1,10 @@
 import { ChannelResult } from "../types";
 import { getAlertMessage } from "../templates";
 
-export async function sendSmsAlert(timestamp: string): Promise<ChannelResult> {
+export async function sendSmsAlert(
+  timestamp: string,
+  location?: { latitude?: number; longitude?: number; accuracy?: number }
+): Promise<ChannelResult> {
   const accountSid = process.env.TWILIO_ACCOUNT_SID;
   const authToken = process.env.TWILIO_AUTH_TOKEN;
   const fromPhone = process.env.TWILIO_PHONE_NUMBER;
@@ -25,7 +28,7 @@ export async function sendSmsAlert(timestamp: string): Promise<ChannelResult> {
   }
 
   try {
-    const message = await getAlertMessage("SMS", timestamp);
+    const message = await getAlertMessage("SMS", timestamp, location);
     const endpoint = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
 
     const formData = new URLSearchParams();

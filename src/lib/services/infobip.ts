@@ -1,7 +1,10 @@
 import { ChannelResult } from "../types";
 import { getAlertMessage } from "../templates";
 
-export async function sendVoiceCallAlert(timestamp: string): Promise<ChannelResult> {
+export async function sendVoiceCallAlert(
+  timestamp: string,
+  location?: { latitude?: number; longitude?: number; accuracy?: number }
+): Promise<ChannelResult> {
   const apiKey = (process.env.INFOBIP_API_KEY || "").trim();
   let baseUrl = (process.env.INFOBIP_BASE_URL || "").trim();
   const rawRecipient = (
@@ -28,17 +31,15 @@ export async function sendVoiceCallAlert(timestamp: string): Promise<ChannelResu
     };
   }
 
-  // Ensure baseUrl starts with https:// and has no trailing slash
   if (!baseUrl.startsWith("http://") && !baseUrl.startsWith("https://")) {
     baseUrl = `https://${baseUrl}`;
   }
   baseUrl = baseUrl.replace(/\/+$/, "");
 
-  // Format recipient number (digits only for international E.164 without leading +)
   const cleanedRecipient = rawRecipient.replace(/[^0-9]/g, "");
 
   try {
-    const message = await getAlertMessage("CALL", timestamp);
+    const message = await getAlertMessage("CALL", timestamp, location);
     const speechText = message.body;
 
     const endpoint = `${baseUrl}/tts/3/advanced`;
